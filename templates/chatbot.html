@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Career Coach - Chat</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body class="chat-page">
+    <main class="chat-shell">
+        <!-- Chat Header -->
+        <header class="chat-header">
+            <div class="chat-header-content">
+                <div class="chat-header-main">
+                    <h1 class="chat-title">AI Career Coach</h1>
+                    <p class="chat-subtitle">Get personalized career guidance based on your resume</p>
+                </div>
+                <a href="/" class="back-link" aria-label="Upload new resume">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                        <path d="M12.5 5L7.5 10l5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <span>New Resume</span>
+                </a>
+            </div>
+        </header>
+
+        <!-- Chat Body -->
+        <section id="chatBody" class="chat-body" aria-live="polite" aria-label="Chat conversation">
+            <!-- Empty State (will be hidden when messages exist) -->
+            <div id="emptyState" class="empty-state">
+                <div class="welcome-card">
+                    <div class="welcome-icon">
+                        <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+                            <circle cx="24" cy="24" r="20" fill="url(#welcomeGradient)"/>
+                            <path d="M18 22h12M18 26h12M18 30h8" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                            <defs>
+                                <linearGradient id="welcomeGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" style="stop-color:#667eea"/>
+                                    <stop offset="100%" style="stop-color:#764ba2"/>
+                                </linearGradient>
+                            </defs>
+                        </svg>
+                    </div>
+                    <h2>Welcome to your AI Career Coach</h2>
+                    <p>I've analyzed your resume and I'm ready to help you with career guidance, skill development, and job search strategies.</p>
+                </div>
+                
+                <div class="prompt-chips">
+                    <h3>Try asking about:</h3>
+                    <div class="chips-grid">
+                        <button class="prompt-chip" data-prompt="What are my strongest skills based on my resume?">
+                            <span class="chip-icon">💪</span>
+                            <span>Skill Analysis</span>
+                        </button>
+                        <button class="prompt-chip" data-prompt="What job roles are most suitable for my background?">
+                            <span class="chip-icon">🎯</span>
+                            <span>Role Matching</span>
+                        </button>
+                        <button class="prompt-chip" data-prompt="Rewrite my experience bullets in STAR format">
+                            <span class="chip-icon">✨</span>
+                            <span>Resume Enhancement</span>
+                        </button>
+                        <button class="prompt-chip" data-prompt="What skills am I missing to become a senior developer?">
+                            <span class="chip-icon">📈</span>
+                            <span>Skill Gaps</span>
+                        </button>
+                        <button class="prompt-chip" data-prompt="Give me interview questions for my target role">
+                            <span class="chip-icon">🤝</span>
+                            <span>Interview Prep</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Messages Container -->
+            <div id="messagesContainer" class="messages-container" style="display: none;">
+                <!-- Messages will be dynamically added here -->
+            </div>
+
+            <!-- Error Banner -->
+            <div id="errorBanner" class="error-banner" style="display: none;" role="alert">
+                <div class="error-content">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                        <circle cx="10" cy="10" r="9" stroke="currentColor" stroke-width="2"/>
+                        <path d="M10 6v4M10 14h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                    <span id="errorMessage"></span>
+                </div>
+                <button id="dismissError" class="dismiss-btn" aria-label="Dismiss error">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                        <path d="M12 4L4 12M4 4l8 8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                </button>
+            </div>
+        </section>
+
+        <!-- Right Sidebar (Desktop Only) -->
+        <aside class="chat-aside">
+            {% if resume_summary %}
+            <div class="aside-card">
+                <div class="aside-header">
+                    <h3>Resume Summary</h3>
+                    <button class="copy-btn" id="copyResume" aria-label="Copy resume summary">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                            <rect x="2" y="2" width="8" height="10" rx="1" stroke="currentColor" stroke-width="1.5" fill="none"/>
+                            <path d="M6 2V1a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1h-1" stroke="currentColor" stroke-width="1.5" fill="none"/>
+                        </svg>
+                    </button>
+                </div>
+                <div class="aside-content">
+                    <p>{{ resume_summary }}</p>
+                </div>
+            </div>
+            {% endif %}
+            
+            <div class="aside-card">
+                <div class="aside-header">
+                    <h3>Tips</h3>
+                </div>
+                <div class="aside-content">
+                    <ul class="tips-list">
+                        <li>Be specific about your career goals</li>
+                        <li>Ask about skill gaps for your target role</li>
+                        <li>Request examples and actionable advice</li>
+                        <li>Inquire about industry trends and insights</li>
+                    </ul>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Chat Composer -->
+        <footer class="chat-composer">
+            <form id="chatForm" class="composer-form">
+                <div class="composer-wrapper">
+                    <div class="textarea-wrapper">
+                        <textarea 
+                            id="messageInput" 
+                            placeholder="Ask about your career, skills, or next steps..."
+                            rows="1"
+                            maxlength="500"
+                            aria-label="Type your message"
+                        ></textarea>
+                        <div class="composer-actions">
+                            <span class="char-counter">
+                                <span id="charCount">0</span>/500
+                            </span>
+                            <button type="submit" id="sendBtn" class="send-btn" disabled aria-label="Send message">
+                                <span class="send-icon">
+                                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                        <path d="M2 10l16-8-8 16-2-6-6-2z" fill="currentColor"/>
+                                    </svg>
+                                </span>
+                                <div class="send-spinner" style="display: none;">
+                                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                        <circle cx="10" cy="10" r="8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-dasharray="50.27" stroke-dashoffset="50.27">
+                                            <animateTransform attributeName="transform" type="rotate" values="0 10 10;360 10 10" dur="1s" repeatCount="indefinite"/>
+                                        </circle>
+                                    </svg>
+                                </div>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="composer-hint">
+                    <small>Press Enter to send • Shift+Enter for newline</small>
+                </div>
+            </form>
+        </footer>
+    </main>
+
+    <!-- Error/Warning Banners from Flask -->
+    {% if error %}
+    <div class="flask-banner error-banner-flask">
+        <div class="banner-content">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                <circle cx="10" cy="10" r="9" stroke="currentColor" stroke-width="2"/>
+                <path d="M10 6v4M10 14h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            <span>{{ error }}</span>
+        </div>
+        <a href="/" class="banner-btn">Go to Upload Page</a>
+    </div>
+    {% endif %}
+
+    {% if warning %}
+    <div class="flask-banner warning-banner-flask">
+        <div class="banner-content">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                <path d="M10 2L2 18h16L10 2zM10 8v4M10 16h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            <span>{{ warning }}</span>
+        </div>
+        <a href="/" class="banner-btn">Upload Resume</a>
+    </div>
+    {% endif %}
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="{{ url_for('static', filename='js/chat.js') }}"></script>
+</body>
+</html>

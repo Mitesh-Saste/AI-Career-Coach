@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Career Coach - Upload Resume</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <style>
+        .mock-interview-cta {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
+            padding: 40px;
+            margin-bottom: 32px;
+            text-align: center;
+            color: white;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.2);
+        }
+
+        .cta-content h2 {
+            margin: 0 0 12px 0;
+            font-size: 1.75rem;
+            font-weight: 700;
+        }
+
+        .cta-content p {
+            margin: 0 0 24px 0;
+            font-size: 1rem;
+            opacity: 0.95;
+            line-height: 1.6;
+        }
+
+        .btn-mock-interview {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 14px 32px;
+            background: white;
+            color: #667eea;
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn-mock-interview:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-mock-interview:focus-visible {
+            outline: 2px solid white;
+            outline-offset: 2px;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <!-- Main Card Container -->
+        <div class="main-card">
+            <!-- Hero Section -->
+            <div class="hero-section">
+                <h1 class="hero-title">AI Career Coach</h1>
+                <p class="hero-subtitle">Upload your resume to get personalized AI-powered career guidance</p>
+            </div>
+
+            <!-- How It Works Section -->
+            <div class="features-section">
+                <h2 class="features-title">How it works</h2>
+                <div class="features-grid">
+                    <div class="feature-item">
+                        <div class="feature-number">1</div>
+                        <div class="feature-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" fill="#667eea"/>
+                                <polyline points="14,2 14,8 20,8" fill="white"/>
+                                <line x1="16" y1="13" x2="8" y2="13" stroke="white" stroke-width="2"/>
+                                <line x1="16" y1="17" x2="8" y2="17" stroke="white" stroke-width="2"/>
+                                <polyline points="10,9 9,9 8,9" stroke="white" stroke-width="2"/>
+                            </svg>
+                        </div>
+                        <h3>Upload Resume</h3>
+                        <p>Securely upload your PDF resume for AI analysis</p>
+                    </div>
+                    
+                    <div class="feature-item">
+                        <div class="feature-number">2</div>
+                        <div class="feature-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                                <circle cx="12" cy="12" r="10" fill="#48bb78"/>
+                                <path d="m9 12 2 2 4-4" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </div>
+                        <h3>AI Analysis</h3>
+                        <p>Advanced AI analyzes your skills & experience</p>
+                    </div>
+                    
+                    <div class="feature-item">
+                        <div class="feature-number">3</div>
+                        <div class="feature-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" fill="#f093fb"/>
+                                <circle cx="9" cy="12" r="1" fill="white"/>
+                                <circle cx="12" cy="12" r="1" fill="white"/>
+                                <circle cx="15" cy="12" r="1" fill="white"/>
+                            </svg>
+                        </div>
+                        <h3>Career Coaching</h3>
+                        <p>Chat with your personalized AI career coach</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mock Interview CTA -->
+            <div class="mock-interview-cta">
+                <div class="cta-content">
+                    <h2>🎤 Practice Your Interview Skills</h2>
+                    <p>Get AI-powered feedback on your interview responses with our Mock Interview Mode</p>
+                    <a href="/interview/page" class="btn-mock-interview" aria-label="Start mock interview practice">
+                        <span>Start Mock Interview</span>
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                            <path d="M4 10h12m-6-6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Upload Card -->
+            <div class="upload-card">
+                <div class="upload-header">
+                    <h3 class="upload-title">Upload your resume</h3>
+                    <button type="button" class="close-btn" id="closeBtn" style="display: none;" aria-label="Remove uploaded file">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                            <path d="M15 5L5 15M5 5l10 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </button>
+                </div>
+                
+                <form id="uploadForm" enctype="multipart/form-data" class="upload-form">
+                    <div class="upload-zone" id="uploadZone">
+                        <input type="file" id="resume" name="resume" accept=".pdf" required aria-label="Choose PDF resume file">
+                        <div class="upload-content" id="uploadContent">
+                            <div class="upload-icon">
+                                <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+                                    <rect x="8" y="6" width="32" height="36" rx="4" fill="none" stroke="#667eea" stroke-width="2"/>
+                                    <path d="M16 18h16M16 24h16M16 30h12" stroke="#667eea" stroke-width="2" stroke-linecap="round"/>
+                                </svg>
+                            </div>
+                            <h4 class="upload-text">Drop your resume here</h4>
+                            <p class="upload-subtext">or <span class="upload-link">click to browse</span></p>
+                            <div class="upload-info">
+                                <span class="file-type">PDF files only</span>
+                                <span class="file-size">Max 16MB</span>
+                            </div>
+                        </div>
+                        
+                        <div class="file-chip" id="fileChip" style="display: none;">
+                            <div class="file-chip-icon">
+                                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                    <path d="M11.667 2.5H5a1.667 1.667 0 0 0-1.667 1.667v11.666A1.667 1.667 0 0 0 5 17.5h10a1.667 1.667 0 0 0 1.667-1.667V6.667L11.667 2.5z" fill="#10b981"/>
+                                    <path d="M11.667 2.5v4.167H15.833" fill="white"/>
+                                </svg>
+                            </div>
+                            <div class="file-chip-info">
+                                <span class="file-name" id="fileName"></span>
+                                <span class="file-size-info" id="fileSize"></span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn-upload" id="uploadBtn" aria-label="Process resume with AI">
+                        <span class="btn-text">Process Resume</span>
+                        <div class="btn-spinner" style="display: none;" aria-hidden="true">
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                <circle cx="10" cy="10" r="8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-dasharray="50.27" stroke-dashoffset="50.27">
+                                    <animateTransform attributeName="transform" type="rotate" values="0 10 10;360 10 10" dur="1s" repeatCount="indefinite"/>
+                                </circle>
+                            </svg>
+                        </div>
+                    </button>
+                </form>
+
+                <div id="message" class="status-message" style="display: none;" role="alert"></div>
+                <div id="preview" class="preview-section" style="display: none;"></div>
+            </div>
+
+            <div id="chatLink" class="chat-section" style="display: none;">
+                <a href="/chat" class="btn-chat" aria-label="Start AI career coaching session">
+                    <span>Start AI Career Coaching</span>
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                        <path d="M4 10h12m-6-6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const uploadForm = document.getElementById('uploadForm');
+        const resumeFile = document.getElementById('resume');
+        const uploadZone = document.getElementById('uploadZone');
+        const uploadContent = document.getElementById('uploadContent');
+        const fileChip = document.getElementById('fileChip');
+        const fileName = document.getElementById('fileName');
+        const fileSize = document.getElementById('fileSize');
+        const closeBtn = document.getElementById('closeBtn');
+        const message = document.getElementById('message');
+        const preview = document.getElementById('preview');
+        const chatLink = document.getElementById('chatLink');
+        const uploadBtn = document.getElementById('uploadBtn');
+        const btnText = document.querySelector('.btn-text');
+        const btnSpinner = document.querySelector('.btn-spinner');
+
+        // Drag and drop functionality
+        uploadZone.addEventListener('click', () => resumeFile.click());
+        
+        uploadZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadZone.classList.add('drag-over');
+        });
+        
+        uploadZone.addEventListener('dragleave', (e) => {
+            if (!uploadZone.contains(e.relatedTarget)) {
+                uploadZone.classList.remove('drag-over');
+            }
+        });
+        
+        uploadZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadZone.classList.remove('drag-over');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                if (files[0].type === 'application/pdf') {
+                    resumeFile.files = files;
+                    handleFileSelect(files[0]);
+                } else {
+                    showMessage('Please select a PDF file only.', 'error');
+                }
+            }
+        });
+
+        resumeFile.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFileSelect(e.target.files[0]);
+            }
+        });
+
+        // Close button functionality
+        closeBtn.addEventListener('click', clearFile);
+        closeBtn.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                clearFile();
+            }
+        });
+
+        function handleFileSelect(file) {
+            if (file.size > 16 * 1024 * 1024) {
+                showMessage('File too large. Maximum size is 16MB.', 'error');
+                clearFile();
+                return;
+            }
+            
+            if (file.type !== 'application/pdf') {
+                showMessage('Please select a PDF file only.', 'error');
+                clearFile();
+                return;
+            }
+            
+            // Show file chip and hide upload content
+            fileName.textContent = file.name;
+            fileSize.textContent = `${(file.size / 1024 / 1024).toFixed(1)}MB`;
+            uploadContent.style.display = 'none';
+            fileChip.style.display = 'flex';
+            closeBtn.style.display = 'flex';
+            uploadZone.classList.add('file-selected');
+            
+            // Clear any previous messages
+            message.style.display = 'none';
+        }
+
+        function clearFile() {
+            resumeFile.value = '';
+            uploadContent.style.display = 'block';
+            fileChip.style.display = 'none';
+            closeBtn.style.display = 'none';
+            uploadZone.classList.remove('file-selected');
+            message.style.display = 'none';
+        }
+
+        uploadForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            if (!resumeFile.files[0]) {
+                showMessage('Please select a PDF file.', 'error');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('resume', resumeFile.files[0]);
+
+            setLoadingState(true);
+            showMessage('Processing your resume with AI...', 'info');
+
+            try {
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    showMessage(data.message, 'success');
+                    showPreview(data.preview, data.stats);
+                    chatLink.style.display = 'block';
+                    chatLink.scrollIntoView({ behavior: 'smooth' });
+                } else {
+                    showMessage(data.error || 'Upload failed', 'error');
+                }
+            } catch (error) {
+                showMessage('Network error: ' + error.message, 'error');
+            } finally {
+                setLoadingState(false);
+            }
+        });
+
+        function showMessage(text, type) {
+            message.textContent = text;
+            message.className = `status-message ${type}`;
+            message.style.display = 'block';
+        }
+
+        function showPreview(previewText, stats) {
+            // Build final preview HTML with default message
+            const defaultMsg = `
+                <div class="resume-default-message">
+                    <p>You can now ask the AI Career Coach for:</p>
+                    <ul>
+                        <li>Career advice based on your profile</li>
+                        <li>Resume improvements and bullet rewriting</li>
+                        <li>Skill recommendations for your target roles</li>
+                        <li>Interview preparation help</li>
+                    </ul>
+                </div>
+            `;
+            
+            preview.innerHTML = `
+                <div class="preview-header">
+                    <h4>Resume Analysis Complete</h4>
+                    <div class="preview-stats">
+                        <span class="stat-item">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                <path d="M2 3h12c.6 0 1 .4 1 1v8c0 .6-.4 1-1 1H2c-.6 0-1-.4-1-1V4c0-.6.4-1 1-1z" fill="currentColor"/>
+                            </svg>
+                            ${stats.resume_length} chars
+                        </span>
+                        <span class="stat-item">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                <rect x="2" y="2" width="12" height="12" rx="2" fill="currentColor"/>
+                            </svg>
+                            ${stats.chunks_created} sections
+                        </span>
+                    </div>
+                </div>
+                ${defaultMsg}
+            `;
+            preview.style.display = 'block';
+        }
+
+        function setLoadingState(loading) {
+            uploadBtn.disabled = loading;
+            if (loading) {
+                btnText.style.display = 'none';
+                btnSpinner.style.display = 'flex';
+                uploadBtn.classList.add('loading');
+            } else {
+                btnText.style.display = 'flex';
+                btnSpinner.style.display = 'none';
+                uploadBtn.classList.remove('loading');
+            }
+        }
+    </script>
+</body>
+</html>

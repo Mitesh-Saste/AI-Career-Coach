@@ -1,0 +1,42 @@
+# Core Flask Framework
+Flask==3.0.0
+Flask-CORS==4.0.0
+Werkzeug==3.0.1
+
+# Environment Management
+python-dotenv==1.0.0
+
+# PDF Processing
+PyPDF2==3.0.1
+
+# Google Gen AI Integration (new SDK)
+google-genai>=1.66.0
+
+# Machine Learning & Embeddings
+numpy==1.26.4
+
+# Vector Database
+faiss-cpu==1.8.0.post1
+
+# HTTP Requests
+requests>=2.31.0
+
+# Data Processing
+langchain
+langchain-community
+
+# Utilities
+tqdm==4.67.3
+typing-extensions>=4.5.0
+packaging==26.0
+
+# Security
+cryptography>=41.0.0
+
+# Flask internal deps
+click>=8.0.0
+MarkupSafe>=2.1.0
+Jinja2>=3.1.0
+itsdangerous>=2.1.0
+blinker>=1.6.0
+gunicorn==21.2.0
