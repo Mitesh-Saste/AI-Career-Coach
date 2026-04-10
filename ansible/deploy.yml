@@ -1,0 +1,60 @@
+---
+- name: Deploy AI Career Coach
+  hosts: ec2
+  become: true
+
+  tasks:
+    - name: Install Docker and AWS CLI
+      apt:
+        name: [docker.io, awscli]
+        state: present
+        update_cache: yes
+
+    - name: Start and enable Docker
+      systemd:
+        name: docker
+        state: started
+        enabled: yes
+
+    - name: Add ubuntu user to docker group
+      user:
+        name: ubuntu
+        groups: docker
+        append: yes
+
+    - name: Authenticate Docker to ECR
+      shell: >
+        aws ecr get-login-password --region {{ aws_region }}
+        | docker login --username AWS --password-stdin {{ ecr_repo }}
+
+    - name: Pull latest image from ECR
+      shell: docker pull {{ ecr_repo }}:{{ image_tag }}
+
+    - name: Stop existing container
+      shell: docker stop ai-career-coach || true
+
+    - name: Remove existing container
+      shell: docker rm ai-career-coach || true
+
+    - name: Run new container
+      shell: >
+        docker run -d
+        --name ai-career-coach
+        --restart unless-stopped
+        -p 5000:5000
+        -e GEMINI_API_KEY="{{ gemini_api_key }}"
+        -e SECRET_KEY="{{ secret_key }}"
+        -e FLASK_ENV=production
+        -v /opt/ai-career-coach/uploads:/app/uploads
+        -v /opt/ai-career-coach/vector_index:/app/vector_index
+        {{ ecr_repo }}:{{ image_tag }}
+
+    - name: Create persistent volume directories
+      file:
+        path: "{{ item }}"
+        state: directory
+        owner: ubuntu
+        mode: '0755'
+      loop:
+        - /opt/ai-career-coach/uploads
+        - /opt/ai-career-coach/vector_index

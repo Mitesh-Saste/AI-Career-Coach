@@ -13,10 +13,10 @@ PyPDF2==3.0.1
 google-genai>=1.66.0
 
 # Machine Learning & Embeddings
-numpy==1.26.4
+numpy>=2.0.0
 
 # Vector Database
-faiss-cpu==1.8.0.post1
+faiss-cpu>=1.9.0
 
 # HTTP Requests
 requests>=2.31.0

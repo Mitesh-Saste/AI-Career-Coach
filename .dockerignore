@@ -1,0 +1,15 @@
+.env
+.git
+.gitignore
+__pycache__
+*.pyc
+*.pyo
+uploads/*
+!uploads/.gitkeep
+vector_index/*
+!vector_index/.gitkeep
+*.pdf
+Jenkinsfile
+deploy/
+ansible/
+README.md

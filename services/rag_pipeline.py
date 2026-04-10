@@ -1,4 +1,5 @@
 import os
+import time
 from typing import List, Dict, Optional
 from services.resume_parser import extract_text_from_pdf
 from services.chunker import chunk_text
@@ -81,17 +82,36 @@ class RAGPipeline:
         prompt = self._build_prompt(user_query, context, resume_summary)
         
         # Call Google Gemini with optimized generation config using new SDK
+        models_to_try = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-2.0-flash-lite"]
         try:
-            resp = self.client.models.generate_content(
-                model="gemini-2.5-flash",
-                contents=prompt,
-                config=types.GenerateContentConfig(
-                    max_output_tokens=3000,
-                    temperature=0.6,
-                    top_p=0.9,
-                    top_k=40
-                ),
-            )
+            resp = None
+            last_error = None
+            for model in models_to_try:
+                for attempt in range(2):
+                    try:
+                        resp = self.client.models.generate_content(
+                            model=model,
+                            contents=prompt,
+                            config=types.GenerateContentConfig(
+                                max_output_tokens=3000,
+                                temperature=0.6,
+                                top_p=0.9,
+                                top_k=40
+                            ),
+                        )
+                        break
+                    except Exception as e:
+                        last_error = e
+                        if "503" in str(e) and attempt < 1:
+                            time.sleep(2)
+                            continue
+                        if "429" in str(e):
+                            raise  # quota exhausted, no point retrying other attempts
+                        break
+                if resp is not None:
+                    break
+            if resp is None:
+                raise last_error
             
             ai_response = resp.text
             
@@ -115,7 +135,13 @@ class RAGPipeline:
             }
             
         except Exception as e:
-            raise Exception(f"Error calling Google Gemini API: {str(e)}")
+            err = str(e)
+            if "429" in err or "RESOURCE_EXHAUSTED" in err:
+                import re
+                delay = re.search(r'retry in (\d+)', err)
+                wait = f" Please retry in {delay.group(1)} seconds." if delay else ""
+                raise Exception(f"API quota exceeded for all available models.{wait}")
+            raise Exception(f"Error calling Google Gemini API: {err}")
     
     def _build_prompt(self, user_query: str, context: str, resume_summary: str) -> str:
         """Build the prompt template for Google Gemini.

@@ -319,8 +319,8 @@ if __name__ == '__main__':
     logger.info("Mock Interview Service will be initialized on-demand")
     
     # Check if required environment variables are set
-    if not os.environ.get('GOOGLE_API_KEY'):
-        logger.warning("GOOGLE_API_KEY not set. The application may not work properly.")
+    if not os.environ.get('GEMINI_API_KEY'):
+        logger.warning("GEMINI_API_KEY not set. The application may not work properly.")
     
     # Run the application
     debug_mode = os.environ.get('FLASK_ENV') != 'production'
