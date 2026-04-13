@@ -21,12 +21,11 @@ pipeline {
         stage('Terraform Init & Apply') {
             steps {
                 // Write private key and derive public key from Jenkins SSH credential
-                sshagent(['ec2-ssh-key']) {
+                withCredentials([sshUserPrivateKey(credentialsId: 'jenkins', keyFileVariable: 'SSH_KEY_FILE')]) {
                     sh '''
                         mkdir -p ~/.ssh
-                        ssh-add -L > ~/.ssh/ec2-deploy.pem
+                        cp "$SSH_KEY_FILE" ~/.ssh/ec2-deploy.pem
                         chmod 400 ~/.ssh/ec2-deploy.pem
-                        # Derive the public key from the private key for Terraform
                         ssh-keygen -y -f ~/.ssh/ec2-deploy.pem > ~/.ssh/ec2-deploy.pub
                     '''
                 }
@@ -104,7 +103,7 @@ EOF
 
         stage('Deploy via Ansible') {
             steps {
-                sshagent(['ec2-ssh-key']) {
+                sshagent(['jenkins']) {
                     sh """
                         ansible-playbook -i ansible/inventory.ini ansible/deploy.yml \
                             -e "ecr_repo=${ECR_REPO}" \
