@@ -31,9 +31,9 @@ pipeline {
                 dir('deploy') {
                     sh '''
                         terraform init -input=false
-                        # Write public key to tfvars file to avoid shell word-splitting issues
-                        echo "public_key = \"$(cat ${WORKSPACE}/ec2-deploy.pub)\"" > terraform.tfvars
-                        echo "aws_region = \"${AWS_REGION}\"" >> terraform.tfvars
+                        # Write public key to tfvars file with proper quoting
+                        printf 'public_key = "%s"\n' "$(cat ${WORKSPACE}/ec2-deploy.pub)" > terraform.tfvars
+                        printf 'aws_region = "%s"\n' "${AWS_REGION}" >> terraform.tfvars
                         terraform apply -input=false -auto-approve
                     '''
                     sh '''
