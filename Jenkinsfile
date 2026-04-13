@@ -31,9 +31,10 @@ pipeline {
                 dir('deploy') {
                     sh '''
                         terraform init -input=false
-                        terraform apply -input=false -auto-approve \
-                            -var="public_key=$(cat ${WORKSPACE}/ec2-deploy.pub)" \
-                            -var="aws_region=${AWS_REGION}"
+                        # Write public key to tfvars file to avoid shell word-splitting issues
+                        echo "public_key = \"$(cat ${WORKSPACE}/ec2-deploy.pub)\"" > terraform.tfvars
+                        echo "aws_region = \"${AWS_REGION}\"" >> terraform.tfvars
+                        terraform apply -input=false -auto-approve
                     '''
                     sh '''
                         terraform output -raw ec2_public_ip > ../ec2_ip.txt
@@ -68,14 +69,20 @@ pipeline {
 
                     echo "Waiting for Docker to be installed via user_data..."
                     for i in $(seq 1 30); do
-                        if ssh -o StrictHostKeyChecking=no \
+                        RESULT=$(ssh -o StrictHostKeyChecking=no \
                                -o ConnectTimeout=10 \
                                -o BatchMode=yes \
                                -i ${WORKSPACE}/ec2-deploy.pem \
-                               ubuntu@${EC2_IP} "test -f /tmp/user_data_done && docker --version" 2>/dev/null; then
-                            echo "Docker is ready"
+                               ubuntu@${EC2_IP} \
+                               "test -f /tmp/user_data_done && docker --version && echo READY" 2>/dev/null || true)
+                        if echo "$RESULT" | grep -q READY; then
+                            echo "Docker is ready: $RESULT"
                             exit 0
                         fi
+                        # Print cloud-init status for debugging
+                        ssh -o StrictHostKeyChecking=no -o ConnectTimeout=10 -o BatchMode=yes \
+                            -i ${WORKSPACE}/ec2-deploy.pem ubuntu@${EC2_IP} \
+                            "cloud-init status 2>/dev/null || echo 'cloud-init not done'" 2>/dev/null || true
                         echo "Docker attempt $i/30 — waiting 15s..."
                         sleep 15
                     done
