@@ -8,7 +8,7 @@ pipeline {
         SECRET_KEY     = credentials('FLASK_SECRET_KEY')
         AWS_ACCESS_KEY_ID     = credentials('aws-access-key-id')
         AWS_SECRET_ACCESS_KEY = credentials('aws-secret-access-key')
-        TF_KEY_NAME    = credentials('EC2_KEY_NAME')   // just the key pair name string, e.g. "my-key"
+        EC2_KEY_PAIR_NAME     = credentials('EC2_KEY_NAME')  // secret text: just the key pair name e.g. "my-key"
     }
 
     stages {
@@ -25,10 +25,9 @@ pipeline {
                     sh '''
                         terraform init -input=false
                         terraform apply -input=false -auto-approve \
-                            -var="key_name=${TF_KEY_NAME}" \
+                            -var="key_name=${EC2_KEY_PAIR_NAME}" \
                             -var="aws_region=${AWS_REGION}"
                     '''
-                    // Capture outputs into files for downstream stages
                     sh '''
                         terraform output -raw ec2_public_ip  > ../ec2_ip.txt
                         terraform output -raw ecr_repo_url   > ../ecr_repo.txt
@@ -38,6 +37,14 @@ pipeline {
                     env.EC2_IP   = readFile('ec2_ip.txt').trim()
                     env.ECR_REPO = readFile('ecr_repo.txt').trim()
                 }
+                // Write .pem from Jenkins SSH credential so all downstream stages can use it
+                sshagent(['ec2-ssh-key']) {
+                    sh '''
+                        mkdir -p ~/.ssh
+                        ssh-add -L > ~/.ssh/ec2-deploy.pem
+                        chmod 400 ~/.ssh/ec2-deploy.pem
+                    '''
+                }
                 echo "EC2 IP: ${env.EC2_IP}"
                 echo "ECR Repo: ${env.ECR_REPO}"
             }
@@ -45,13 +52,12 @@ pipeline {
 
         stage('Wait for EC2') {
             steps {
-                // Give EC2 user_data time to install Docker
                 sh '''
                     echo "Waiting for EC2 to be ready..."
                     for i in $(seq 1 20); do
                         if ssh -o StrictHostKeyChecking=no \
                                -o ConnectTimeout=5 \
-                               -i ~/.ssh/${TF_KEY_NAME}.pem \
+                               -i ~/.ssh/ec2-deploy.pem \
                                ubuntu@${EC2_IP} "docker --version" 2>/dev/null; then
                             echo "EC2 is ready"
                             exit 0
@@ -89,7 +95,7 @@ pipeline {
                 sh """
                     cat > ansible/inventory.ini <<EOF
 [ec2]
-${EC2_IP} ansible_user=ubuntu ansible_ssh_private_key_file=~/.ssh/${TF_KEY_NAME}.pem ansible_ssh_common_args='-o StrictHostKeyChecking=no'
+${EC2_IP} ansible_user=ubuntu ansible_ssh_private_key_file=~/.ssh/ec2-deploy.pem ansible_ssh_common_args='-o StrictHostKeyChecking=no'
 EOF
                 """
             }
