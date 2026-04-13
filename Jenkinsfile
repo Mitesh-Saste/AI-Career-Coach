@@ -23,17 +23,16 @@ pipeline {
                 // Write private key and derive public key from Jenkins SSH credential
                 withCredentials([sshUserPrivateKey(credentialsId: 'ec2-ssh-key', keyFileVariable: 'SSH_KEY_FILE')]) {
                     sh '''
-                        mkdir -p ~/.ssh
-                        cp "$SSH_KEY_FILE" ~/.ssh/ec2-deploy.pem
-                        chmod 400 ~/.ssh/ec2-deploy.pem
-                        ssh-keygen -y -f ~/.ssh/ec2-deploy.pem > ~/.ssh/ec2-deploy.pub
+                        cp "$SSH_KEY_FILE" ec2-deploy.pem
+                        chmod 400 ec2-deploy.pem
+                        ssh-keygen -y -f ec2-deploy.pem > ec2-deploy.pub
                     '''
                 }
                 dir('deploy') {
                     sh '''
                         terraform init -input=false
                         terraform apply -input=false -auto-approve \
-                            -var="public_key=$(cat ~/.ssh/ec2-deploy.pub)" \
+                            -var="public_key=$(cat ${WORKSPACE}/ec2-deploy.pub)" \
                             -var="aws_region=${AWS_REGION}"
                     '''
                     sh '''
@@ -57,7 +56,7 @@ pipeline {
                     for i in $(seq 1 20); do
                         if ssh -o StrictHostKeyChecking=no \
                                -o ConnectTimeout=5 \
-                               -i ~/.ssh/ec2-deploy.pem \
+                               -i ${WORKSPACE}/ec2-deploy.pem \
                                ubuntu@${EC2_IP} "docker --version" 2>/dev/null; then
                             echo "EC2 is ready"
                             exit 0
@@ -95,7 +94,7 @@ pipeline {
                 sh """
                     cat > ansible/inventory.ini <<EOF
 [ec2]
-${EC2_IP} ansible_user=ubuntu ansible_ssh_private_key_file=~/.ssh/ec2-deploy.pem ansible_ssh_common_args='-o StrictHostKeyChecking=no'
+${EC2_IP} ansible_user=ubuntu ansible_ssh_private_key_file=${WORKSPACE}/ec2-deploy.pem ansible_ssh_common_args='-o StrictHostKeyChecking=no'
 EOF
                 """
             }
@@ -130,7 +129,7 @@ EOF
         }
         always {
             sh "docker rmi ai-career-coach:${IMAGE_TAG} || true"
-            sh "rm -f ec2_ip.txt ecr_repo.txt"
+            sh "rm -f ec2_ip.txt ecr_repo.txt ec2-deploy.pem ec2-deploy.pub"
         }
     }
 }
