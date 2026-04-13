@@ -8,6 +8,6 @@ variable "ami_id" {
   default     = "ami-0ec10929233384c7f"
 }
 
-variable "key_name" {
-  description = "Name of existing EC2 key pair (injected by Jenkins)"
+variable "public_key" {
+  description = "SSH public key content to create EC2 key pair (injected by Jenkins)"
 }

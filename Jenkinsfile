@@ -8,7 +8,6 @@ pipeline {
         SECRET_KEY     = credentials('FLASK_SECRET_KEY')
         AWS_ACCESS_KEY_ID     = credentials('aws-access-key-id')
         AWS_SECRET_ACCESS_KEY = credentials('aws-secret-access-key')
-        EC2_KEY_PAIR_NAME     = credentials('EC2_KEY_NAME')  // secret text: just the key pair name e.g. "my-key"
     }
 
     stages {
@@ -21,29 +20,31 @@ pipeline {
 
         stage('Terraform Init & Apply') {
             steps {
-                dir('deploy') {
-                    sh '''
-                        terraform init -input=false
-                        terraform apply -input=false -auto-approve \
-                            -var="key_name=${EC2_KEY_PAIR_NAME}" \
-                            -var="aws_region=${AWS_REGION}"
-                    '''
-                    sh '''
-                        terraform output -raw ec2_public_ip  > ../ec2_ip.txt
-                        terraform output -raw ecr_repo_url   > ../ecr_repo.txt
-                    '''
-                }
-                script {
-                    env.EC2_IP   = readFile('ec2_ip.txt').trim()
-                    env.ECR_REPO = readFile('ecr_repo.txt').trim()
-                }
-                // Write .pem from Jenkins SSH credential so all downstream stages can use it
+                // Write private key and derive public key from Jenkins SSH credential
                 sshagent(['ec2-ssh-key']) {
                     sh '''
                         mkdir -p ~/.ssh
                         ssh-add -L > ~/.ssh/ec2-deploy.pem
                         chmod 400 ~/.ssh/ec2-deploy.pem
+                        # Derive the public key from the private key for Terraform
+                        ssh-keygen -y -f ~/.ssh/ec2-deploy.pem > ~/.ssh/ec2-deploy.pub
                     '''
+                }
+                dir('deploy') {
+                    sh '''
+                        terraform init -input=false
+                        terraform apply -input=false -auto-approve \
+                            -var="public_key=$(cat ~/.ssh/ec2-deploy.pub)" \
+                            -var="aws_region=${AWS_REGION}"
+                    '''
+                    sh '''
+                        terraform output -raw ec2_public_ip > ../ec2_ip.txt
+                        terraform output -raw ecr_repo_url  > ../ecr_repo.txt
+                    '''
+                }
+                script {
+                    env.EC2_IP   = readFile('ec2_ip.txt').trim()
+                    env.ECR_REPO = readFile('ecr_repo.txt').trim()
                 }
                 echo "EC2 IP: ${env.EC2_IP}"
                 echo "ECR Repo: ${env.ECR_REPO}"
