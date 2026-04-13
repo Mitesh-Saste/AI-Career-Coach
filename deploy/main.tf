@@ -10,6 +10,11 @@ resource "aws_ecr_repository" "ai_career_coach" {
   image_scanning_configuration {
     scan_on_push = true
   }
+
+  lifecycle {
+    prevent_destroy = false
+    ignore_changes  = [tags]
+  }
 }
 
 # Security Group
@@ -20,13 +25,6 @@ resource "aws_security_group" "ai_career_coach_sg" {
   ingress {
     from_port   = 22
     to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  ingress {
-    from_port   = 80
-    to_port     = 80
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
@@ -44,6 +42,10 @@ resource "aws_security_group" "ai_career_coach_sg" {
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
+
+  lifecycle {
+    ignore_changes = [ingress, egress]
+  }
 }
 
 # IAM Role for EC2 to pull from ECR
@@ -58,6 +60,10 @@ resource "aws_iam_role" "ec2_ecr_role" {
       Principal = { Service = "ec2.amazonaws.com" }
     }]
   })
+
+  lifecycle {
+    ignore_changes = [assume_role_policy]
+  }
 }
 
 resource "aws_iam_role_policy_attachment" "ecr_read" {
@@ -89,6 +95,11 @@ resource "aws_instance" "ai_career_coach" {
 
   tags = {
     Name = "ai-career-coach"
+  }
+
+  lifecycle {
+    # Don't replace EC2 on re-runs — only replace if AMI or instance type changes
+    ignore_changes = [user_data, tags]
   }
 }
 
