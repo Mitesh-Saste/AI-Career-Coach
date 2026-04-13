@@ -96,11 +96,14 @@ resource "aws_instance" "ai_career_coach" {
 
   user_data = <<-EOF
     #!/bin/bash
+    set -e
     apt-get update -y
     apt-get install -y docker.io awscli
     systemctl start docker
     systemctl enable docker
     usermod -aG docker ubuntu
+    # Signal that setup is complete
+    touch /tmp/user_data_done
   EOF
 
   tags = {

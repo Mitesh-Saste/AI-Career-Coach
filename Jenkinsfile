@@ -52,19 +52,34 @@ pipeline {
         stage('Wait for EC2') {
             steps {
                 sh '''
-                    echo "Waiting for EC2 to be ready..."
+                    echo "Waiting for SSH to be available..."
                     for i in $(seq 1 20); do
                         if ssh -o StrictHostKeyChecking=no \
-                               -o ConnectTimeout=5 \
+                               -o ConnectTimeout=10 \
+                               -o BatchMode=yes \
                                -i ${WORKSPACE}/ec2-deploy.pem \
-                               ubuntu@${EC2_IP} "docker --version" 2>/dev/null; then
-                            echo "EC2 is ready"
-                            exit 0
+                               ubuntu@${EC2_IP} "echo SSH_OK" 2>/dev/null | grep -q SSH_OK; then
+                            echo "SSH is ready"
+                            break
                         fi
-                        echo "Attempt $i/20 — waiting 15s..."
+                        echo "SSH attempt $i/20 — waiting 15s..."
                         sleep 15
                     done
-                    echo "EC2 did not become ready in time"
+
+                    echo "Waiting for Docker to be installed via user_data..."
+                    for i in $(seq 1 30); do
+                        if ssh -o StrictHostKeyChecking=no \
+                               -o ConnectTimeout=10 \
+                               -o BatchMode=yes \
+                               -i ${WORKSPACE}/ec2-deploy.pem \
+                               ubuntu@${EC2_IP} "test -f /tmp/user_data_done && docker --version" 2>/dev/null; then
+                            echo "Docker is ready"
+                            exit 0
+                        fi
+                        echo "Docker attempt $i/30 — waiting 15s..."
+                        sleep 15
+                    done
+                    echo "Docker did not become ready in time"
                     exit 1
                 '''
             }
