@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        AWS_REGION      = 'ap-south-1'
+        AWS_REGION      = 'us-east-1'
         ECR_REPO        = '<your-aws-account-id>.dkr.ecr.ap-south-1.amazonaws.com/ai-career-coach'
         IMAGE_TAG       = "${BUILD_NUMBER}"
         EC2_USER        = 'ubuntu'
